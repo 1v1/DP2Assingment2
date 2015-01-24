@@ -1,0 +1,10 @@
+I decided to create a very human-readable xsd file, which can also be easy to parse it.
+The root of the document is the flightInfo element, which is composed by a list of flight elements and list of the aircrafts.
+Every flight element has some attributes and all of them are required. Moreover flightID is an ID,
+ which is unique in the whole XML document and it's used to easily access and identify the flights.
+ Then, I decided that every flight is composed by a list of flightInstances, every FlightInstance can be
+ uniquely identified by flightID and departureDate attributes, which are both required.
+To make the whole document more human-readable and to reduce the number of redundancies, 
+I went for a nested design. In fact, my flightInstance element is composed by a list of passengers,
+who have booked this flightInstance.
+ I tried to set very strict requirements in the schema in order to reduce the number of controls in the Java code.

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.example.org/FDSInfo" xmlns:tns="http://www.example.org/FDSInfo"
+	elementFormDefault="qualified">
+	<!-- Annotations -->
+
+
+	<!-- Element definitions -->
+
+	<xsd:element name="flightInfo" type="tns:FlightInfoType" />
+	<xsd:complexType name="FlightInfoType">
+		<xsd:sequence>
+			<xsd:element name="flight" type="tns:FlightType"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xsd:element name="aircraftSet" type="tns:AircraftSetType"
+				maxOccurs="1" minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="FlightType">
+		<xsd:sequence>
+			<xsd:element name="flightInstance" type="tns:FlightInstanceType"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+		<xsd:attribute ref="tns:flightID" use="required" />
+		<xsd:attribute ref="tns:departureAirport" use="required" />
+		<xsd:attribute ref="tns:destinationAirport" use="required" />
+		<xsd:attribute ref="tns:departureTime" use="required" />
+	</xsd:complexType>
+
+	<xsd:complexType name="AircraftSetType">
+		<xsd:sequence>
+			<xsd:element name="aircraft" type="tns:AircraftType"
+				maxOccurs="unbounded" minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="FlightInstanceType">
+		<xsd:sequence>
+			<xsd:element name="passenger" type="tns:PassengerType"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+		<xsd:attribute ref="tns:delay" use="optional" default="0" />
+		<xsd:attribute ref="tns:flightStatus" use="optional"
+			default="BOOKING" />
+		<xsd:attribute ref="tns:departureGate" use="optional"
+			default="-" />
+		<xsd:attribute ref="tns:departureDate" use="required" />
+		<xsd:attribute ref="tns:flightIDRef" use="required" />
+		<xsd:attribute ref="tns:aircraftModel" use="required" />
+	</xsd:complexType>
+
+	<xsd:complexType name="PassengerType">
+		<xsd:sequence>
+			<xsd:element name="passengerName" type="xsd:normalizedString" />
+		</xsd:sequence>
+		<xsd:attribute ref="tns:boarded" use="optional" default="false" />
+		<xsd:attribute ref="tns:flightIDRef" use="required" />
+		<xsd:attribute ref="tns:seat" use="optional" />
+		<xsd:attribute ref="tns:departureDate" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="AircraftType">
+		<xsd:sequence>
+			<xsd:element name="seat" type="xsd:normalizedString" maxOccurs="unbounded" />
+		</xsd:sequence>
+		<xsd:attribute ref="tns:aircraftModel" use="required" />
+	</xsd:complexType>
+
+	<!-- Attribute definition -->
+	<xsd:attribute name="flightID" type="tns:FlightIDType" />
+	<xsd:attribute name="departureAirport" type="tns:AirportType" />
+	<xsd:attribute name="destinationAirport" type="tns:AirportType" />
+	<xsd:attribute name="departureDate" type="xsd:date" />
+	<xsd:attribute name="numberOfFreeSeats" type="tns:MyIntType" />
+	<xsd:attribute name="boarded" type="xsd:boolean" />
+	<xsd:attribute name="delay" type="tns:MyIntType" />
+	<xsd:attribute name="departureGate" type="xsd:normalizedString" />
+	<xsd:attribute name="departureTime" type="xsd:time" />
+	<xsd:attribute name="flightStatus" type="tns:FlightStatusType" />
+	<xsd:attribute name="flightIDRef" type="xsd:IDREF" />
+	<xsd:attribute name="seat" type="xsd:normalizedString" />
+	<xsd:attribute name="aircraftModel" type="xsd:normalizedString" />
+
+
+
+	<!-- SimpleType definition -->
+	<xsd:simpleType name="FlightIDType">
+		<xsd:restriction base="xsd:ID">
+			<xsd:pattern value="[A-Z]{2}[0-9]{3}" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="AirportType">
+		<xsd:restriction base="xsd:normalizedString">
+			<xsd:pattern value="[A-Z]{3}" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FlightStatusType">
+		<xsd:restriction base="xsd:normalizedString">
+			<xsd:enumeration value="ARRIVED" />
+			<xsd:enumeration value="BOARDING" />
+			<xsd:enumeration value="BOOKING" />
+			<xsd:enumeration value="CANCELLED" />
+			<xsd:enumeration value="CHECKINGIN" />
+			<xsd:enumeration value="DEPARTED" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="MyIntType">
+		<xsd:restriction base="xsd:int">
+			<xsd:minInclusive value="0" />
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

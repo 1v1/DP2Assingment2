@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="build" name="FDS-2">
+	<description>
+			Script for FDS Assignment 2
+	</description>
+
+	<!-- The "FlightMonitorFactory" used for FDSInfo -->
+	<property name="FDSInfo.FlightMonitorFactory" value="it.polito.dp2.FDS.Random.FlightMonitorFactoryImpl" />
+
+	<!-- The default output file for FDSInfoSerializer -->
+	<property name="output" location="${java.io.tmpdir}/out1.xml"/>
+
+	<!-- The default test case -->
+	<property name="testcase" value="0" />
+	<!-- The default test class -->
+	<property name="test.class" value="it.polito.dp2.FDS.lab2.tests.FDSTests" />
+
+	<property name="lab2.location" location="." />
+	<property name="src.dir" location="${lab2.location}/src" />
+	<property name="build.dir" location="${lab2.location}/build" />
+	<property name="lib.dir" location="${lab2.location}/lib" />
+	<property name="gen.dir" location="${lab2.location}/generated" />
+	<property name="schema.dir" location="${lab2.location}/xsd" />
+
+	<property name="debug" value="true" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+
+	<!-- The classpath to be used for compilation of the solution -->
+	<path id="FDS.classpath">
+		<pathelement location="${lib.dir}/FDS.jar" />
+	</path>
+	
+	<!-- Target setseed -->
+	<target name="setseed" unless="seed">
+		<tstamp>
+			<format property="seed" pattern="HHmmss" />
+		</tstamp>
+	</target>
+	
+	<!-- Target init -->
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${gen.dir}" />
+	</target>
+
+	<!-- Target chk-bindings -->
+	<target name="-chk-bindings">
+		<uptodate property="generate-bindings.notRequired" targetfile="${gen.dir}/.flagfile">
+			<srcfiles dir="${schema.dir}" includes="**/*.xsd" />
+		</uptodate>
+	</target>
+
+	<!-- Target generate-bindings -->
+	<target name="generate-bindings" unless="generate-bindings.notRequired" depends="init,-chk-bindings">
+		<exec executable="xjc" failonerror="true" >
+			<arg value="-d" />
+			<arg value="${gen.dir}" />
+			<arg value="-p" />
+			<arg value="it.polito.dp2.FDS.sol2.jaxb" />
+			<arg value="${schema.dir}/FDSInfo.xsd" />
+		</exec>
+		<touch file="${gen.dir}/.flagfile" />
+	</target>
+
+	<!-- Target clean -->
+	<target name="clean" description="Clean all">
+		<delete dir="${build.dir}" />
+		<delete dir="${gen.dir}" />
+		<delete includeemptydirs="true">
+		    <fileset dir="${lab2.location}" defaultexcludes="false">
+		       <include name="temp*/**" />
+		    </fileset>
+		</delete>
+		<delete file="${lab2.location}/lab2.zip"/>
+	</target>
+
+	<!-- Target build -->
+	<target name="build" depends="init, generate-bindings" description="Build the solution of Assignment 2">
+		<echo>Building the submitted solution (if needed)...</echo>
+		<javac 
+			destdir="${build.dir}"
+			debug="${debug}"
+			debuglevel="${debuglevel}"
+			source="${source}"
+			target="${target}"
+			includeantruntime="false">
+				<src path="${src.dir}"/>
+				<src path="${gen.dir}"/>
+				<include name="it/polito/dp2/FDS/sol2/**" />
+				<classpath>
+					<path refid="FDS.classpath" />
+				</classpath>
+		</javac>
+		<echo>Done.</echo>
+	</target>
+
+	<!-- Target buildFDSInfo -->	
+	<target name="buildFDSInfo" depends="init">
+		<echo>Building FDSInfo (if needed)...</echo>
+		<javac 
+			destdir="${build.dir}"
+			debug="${debug}"
+			debuglevel="${debuglevel}"
+			source="${source}"
+			target="${target}"
+			includeantruntime="false">
+				<src path="${src.dir}" />
+				<include name="it/polito/dp2/FDS/lab1/FDSInfo.java" />
+				<classpath>
+					<path refid="FDS.classpath" />
+				</classpath>
+		</javac>
+		<echo>Done.</echo>
+	</target>
+
+	<!-- Target FDSInfo -->
+	<target name="FDSInfo" depends="buildFDSInfo, setseed">
+		<java classname="it.polito.dp2.FDS.lab1.FDSInfo" failonerror="true" fork="yes">
+			<sysproperty key="it.polito.dp2.FDS.Random.seed" value="${seed}"/>
+			<sysproperty key="it.polito.dp2.FDS.Random.testcase" value="${testcase}"/>
+			<sysproperty key="it.polito.dp2.FDS.FlightMonitorFactory" value="${FDSInfo.FlightMonitorFactory}"/>
+			<classpath>
+				<path refid="FDS.classpath" />
+				<pathelement location="${lib.dir}/FDSRandom.jar"/>
+				<pathelement path="${build.dir}"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!-- Target FDSInfoSerializer -->
+	<target name="FDSInfoSerializer" depends="setseed">
+		<echo>Output file: ${output}</echo>
+		<echo>Testcase: ${testcase}</echo>
+		<echo>Seed: ${seed}</echo>
+		<echo />
+		<antcall target="FDSInfoSerializer.test">
+			<param name="outfile" value="${output}" />
+		</antcall>
+	</target>
+	
+	<!-- Target renFuncTest -->
+	<target name="runFuncTest" depends="setseed">
+		<antcall target="runFuncTest.real">
+			<param name="test.class" value="${test.class}" />
+			<param name="exit.code" value="126" />
+		</antcall>
+	</target>
+
+	<!-- Target FDSInfoSerializer.test -->
+	<target name="FDSInfoSerializer.test" depends="build">
+		<java classname="it.polito.dp2.FDS.sol2.FDSInfoSerializer" failonerror="true" fork="yes">
+			<sysproperty key="it.polito.dp2.FDS.FlightMonitorFactory" value="${FDSInfo.FlightMonitorFactory}" />
+			<sysproperty key="it.polito.dp2.FDS.Random.seed" value="${seed}"/>
+			<sysproperty key="it.polito.dp2.FDS.Random.testcase" value="${testcase}"/>
+			<arg value="${outfile}" />
+			<classpath>
+				<path refid="FDS.classpath" />
+				<pathelement location="${lib.dir}/FDSRandom.jar"/>
+				<pathelement path="${build.dir}" />
+			</classpath>
+		</java>
+		<echo>Done.</echo>
+	</target>
+	
+	<target name="runFuncTest.real" depends="build">
+		<tempfile property="temp.dir" destdir="${lab2.location}" prefix="temp"/>
+		<tempfile property="temp.xmlfile" destdir="${temp.dir}" prefix="out" suffix=".xml"/>
+
+		<echo>The tests will run using '${temp.dir}' as working directory.</echo>
+		<echo>Testcase: ${testcase}</echo>
+		<echo>Seed: ${seed}</echo>
+		<echo />
+		<echo>Copying the xsd/FDSInfo.xsd file to the working directory...</echo>
+		<copy file="${schema.dir}/FDSInfo.xsd" todir="${temp.dir}/xsd"/>
+		<echo>File copied.</echo>
+		<echo>Copying the data/airports.xml file to the working directory...</echo>
+		<mkdir dir="${temp.dir}/data"/>
+		<copy file="${lab2.location}/data/airports.xml" todir="${temp.dir}/data"/>
+		<echo>File copied.</echo>
+
+		<antcall target="FDSInfoSerializer.test">
+			<param name="outfile" value="${temp.xmlfile}"/>
+		</antcall>
+
+		<echo>Validating the generated XML file: ${temp.xmlfile}</echo>
+		<java fork="yes" classname="it.polito.dp2.lab2.xml.XMLSchemaValidator" failonerror="false" dir="${temp.dir}" resultproperty="validation_result">
+			<arg path="${temp.dir}/xsd/FDSInfo.xsd"/>
+			<arg path="${temp.xmlfile}"/>
+			<classpath>
+				<pathelement location="${lib.dir}/lab2.jar"/>
+			</classpath>
+		</java>
+		<fail status="125" message="*** XML validation FAILED ***">
+			<condition>
+				<not>
+					<equals arg1="0" arg2="${validation_result}"/>
+				</not>
+			</condition>
+		</fail>
+		<echo>*** XML file validated ***</echo>
+
+		<junit printsummary="yes" dir="${temp.dir}" fork="yes" haltonfailure="no" showoutput="no" filtertrace="true">
+			<sysproperty key="it.polito.dp2.FDS.Random.testcase" value="${testcase}"/>
+			<sysproperty key="it.polito.dp2.FDS.Random.seed" value="${seed}"/>
+			<sysproperty key="it.polito.dp2.FDS.sol2.FlightInfo.file " value="${temp.xmlfile}"/>
+			<formatter type="brief" usefile="false"/>
+			<test haltonfailure="no" failureproperty="test_failed" name="${test.class}"/>
+			<classpath>
+				<path refid="FDS.classpath" />
+				<pathelement location="${lib.dir}/FDSRandom.jar"/>
+				<pathelement path="${build.dir}" />
+				<pathelement location="${lib.dir}/lab2.jar"/>
+				<pathelement location="${lib.dir}/junit-4.5.jar"/>
+			</classpath>
+		</junit>
+		
+		<fail if="test_failed" status="${exit.code}" message="*** Some Tests FAILED ***"/>
+		<echo>*** All Tests PASSED  ***</echo>
+		<delete dir="${temp.dir}"/>
+	</target>
+	
+	<!-- Target make-final-zip for building the final zip containing the solution -->
+	<target name="make-final-zip">
+		<zip destfile="lab2.zip"
+			basedir="${lab2.location}"
+		    includes="src/it/polito/dp2/FDS/sol2/**/*.java xsd/*"
+		/>
+	</target>
+	
+
+</project>
