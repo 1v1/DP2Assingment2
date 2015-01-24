@@ -47,7 +47,7 @@ public class FlightMonitorSol implements FlightMonitor{
 
 	private Set<Aircraft> aircraftSet;
 	// This hash map is used to speed up the search of duplicates
-	private HashMap<String, Aircraft> aircraftMap = new HashMap<String, Aircraft>();
+	private HashMap<String, Aircraft> aircraftMap;
 	private List<FlightReader> flightReaderList;
 	private List<FlightInstanceReader> flightInstanceReaderList;
 
@@ -86,6 +86,7 @@ public class FlightMonitorSol implements FlightMonitor{
 
 			// Create and fill the lists
 			aircraftSet = new HashSet<Aircraft>();
+			aircraftMap = new HashMap<String, Aircraft>();
 			createAircrafts();
 
 			flightReaderList = new ArrayList<FlightReader>();
@@ -209,23 +210,23 @@ public class FlightMonitorSol implements FlightMonitor{
 					//Get the passenger name and her values
 					for (PassengerType p:passengerList)
 					{
-						// Check if the seat assigned to the passenger is in the aircraft
-						boolean seatExists = false;
-						for (String s:aircraft.seats)
-							if (s.equals(p.getSeat()))
-							{
-								seatExists = true;
-								break;
-							}
-						if (!seatExists)
-							throw new FlightMonitorException("The seat assigned to the passenger does not exist in the aircraft");
-						
+//						// Check if the seat assigned to the passenger is in the aircraft
+//						boolean seatExists = false;
+//						for (String s:aircraft.seats)
+//							if (s.equals(p.getSeat()))
+//							{
+//								seatExists = true;
+//								break;
+//							}
+//						if (!seatExists)
+//							throw new FlightMonitorException("The seat assigned to the passenger does not exist in the aircraft");
+//						
 						if (!validator.validateSeat(p.getSeat()))
 						{
 							if (p.isBoarded())
 								throw new FlightMonitorException("The passenger is boarded but has no seat");
-							if ( (!p.getSeat().isEmpty()) && (p.getSeat()!=null) )
-								throw new FlightMonitorException("The seat is not well formed");
+//							if ( (!p.getSeat().isEmpty()) && (p.getSeat()!=null) )
+//								throw new FlightMonitorException("The seat is not well formed");
 						}
 						
 						Passenger passenger = new Passenger (p.getPassengerName(), p.isBoarded(), p.getSeat());
@@ -255,7 +256,7 @@ public class FlightMonitorSol implements FlightMonitor{
 	public FlightReader getFlight(String flightNumber) throws MalformedArgumentException
 	{
 		// Check if the flight number is valid
-		if (validator.validateFlightNumber(flightNumber)==false)
+		if ( (validator.validateFlightNumber(flightNumber)==false) && (flightNumber != null) )
 			throw new MalformedArgumentException("Invalid flight number");
 
 		for (FlightReader f:flightReaderList)
