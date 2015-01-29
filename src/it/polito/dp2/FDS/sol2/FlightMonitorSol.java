@@ -71,20 +71,31 @@ public class FlightMonitorSol implements FlightMonitor{
 				throw new EmptyFileException("The requested file is empty");
 			}
 			br.close();
+			// Create a stream source of the XML Schema
 			Source schemaSource = new StreamSource(XMLschema);
+			// Create a new instance of the schemaFactory to create a new Schema
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Schema schema = schemaFactory.newSchema(schemaSource); 
+			// Create a new Schema using the schema factory and the previously created stream source
+			Schema schema = schemaFactory.newSchema(schemaSource);
+			// Open a stream source of the XML file to unmarshal
 			Source source = new StreamSource(XMLfile);
+			// Set the context of the JAXB framework with the package containing my Java beans.
+			// The JAXBContext instance is intialized with these classes
 			JAXBContext jaxbContext = JAXBContext.newInstance("it.polito.dp2.FDS.sol2.jaxb");
+			// Create the JAXBUnmarshaller that provides the client application the ability to
+			// convert XML data into a tree of Java objects
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
+			// Set the schema of the Unmarshaller
 			jaxbUnmarshaller.setSchema(schema);
+			// Set an event handler which handles errors and warning occured during the unmarshalling process
 			jaxbUnmarshaller.setEventHandler(new MyValidationEventHandler());
 
+			// Unmarshal the root element of the XML source file into the FlightInfoType.class
 			JAXBElement<FlightInfoType> root = jaxbUnmarshaller.unmarshal(source, FlightInfoType.class);
+			// Set flightInfo instance with the value of the root element 
 			flightInfo = root.getValue();
 
-			// Create and fill the lists
+			// Create and fill the lists reading the XML nodes
 			aircraftSet = new HashSet<Aircraft>();
 			aircraftMap = new HashMap<String, Aircraft>();
 			createAircrafts();
@@ -210,25 +221,25 @@ public class FlightMonitorSol implements FlightMonitor{
 					//Get the passenger name and her values
 					for (PassengerType p:passengerList)
 					{
-//						// Check if the seat assigned to the passenger is in the aircraft
-//						boolean seatExists = false;
-//						for (String s:aircraft.seats)
-//							if (s.equals(p.getSeat()))
-//							{
-//								seatExists = true;
-//								break;
-//							}
-//						if (!seatExists)
-//							throw new FlightMonitorException("The seat assigned to the passenger does not exist in the aircraft");
-//						
+						//						// Check if the seat assigned to the passenger is in the aircraft
+						//						boolean seatExists = false;
+						//						for (String s:aircraft.seats)
+						//							if (s.equals(p.getSeat()))
+						//							{
+						//								seatExists = true;
+						//								break;
+						//							}
+						//						if (!seatExists)
+						//							throw new FlightMonitorException("The seat assigned to the passenger does not exist in the aircraft");
+						//						
 						if (!validator.validateSeat(p.getSeat()))
 						{
 							if (p.isBoarded())
 								throw new FlightMonitorException("The passenger is boarded but has no seat");
-//							if ( (!p.getSeat().isEmpty()) && (p.getSeat()!=null) )
-//								throw new FlightMonitorException("The seat is not well formed");
+							//							if ( (!p.getSeat().isEmpty()) && (p.getSeat()!=null) )
+							//								throw new FlightMonitorException("The seat is not well formed");
 						}
-						
+
 						Passenger passenger = new Passenger (p.getPassengerName(), p.isBoarded(), p.getSeat());
 						passengerSet.add(passenger);
 					}
@@ -331,7 +342,7 @@ public class FlightMonitorSol implements FlightMonitor{
 
 		List<FlightInstanceReader> returnList = new LinkedList<FlightInstanceReader>();
 		returnList.clear();
-		
+
 		for (FlightInstanceReader fl:flightInstanceReaderList)
 		{
 			if ((number == null)||(fl.getFlight().getNumber().equals(number)))
@@ -360,20 +371,20 @@ public class FlightMonitorSol implements FlightMonitor{
 		 * to include also the dates that are equals.
 		 * 
 		 */
-		
+
 		flightDate.set(Calendar.HOUR, 0);
 		flightDate.set(Calendar.MINUTE, 0);
 		flightDate.set(Calendar.SECOND, 0);
 		flightDate.set(Calendar.MILLISECOND, 0);
-		
+
 		startDate.set(Calendar.HOUR, 0);
 		startDate.set(Calendar.MINUTE, 0);
 		startDate.set(Calendar.SECOND, 0);
 		startDate.set(Calendar.MILLISECOND, 0);
-		
+
 		return !startDate.after(flightDate);
 	}
-	
+
 	private boolean isEqual(GregorianCalendar flightDate, GregorianCalendar startDate)
 	{
 		if (flightDate.get(Calendar.YEAR) != startDate.get(Calendar.YEAR))
@@ -382,7 +393,7 @@ public class FlightMonitorSol implements FlightMonitor{
 			return false;
 		if (flightDate.get(Calendar.DAY_OF_MONTH) != startDate.get(Calendar.DAY_OF_MONTH))
 			return false;
-		
+
 		return true;
 	}
 
